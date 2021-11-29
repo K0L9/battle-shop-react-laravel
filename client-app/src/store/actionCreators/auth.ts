@@ -1,4 +1,6 @@
 import { AuthAction, AuthActionTypes, ILoginModel } from '../../types/auth';
+import { RegisterAction, RegisterActionTypes, IRegisterModel } from "../../types/register"
+
 import {Dispatch} from "react";
 import http from '../../http_common';
 import { getMaxListeners } from 'process';
@@ -12,6 +14,18 @@ export const loginUser = (data: ILoginModel) => {
         }
         catch(error) {
             dispatch({type: AuthActionTypes.LOGIN_AUTH_ERROR, payload: "Error"});
+        }
+    }
+}
+export const registerUser = (data: IRegisterModel) => {
+    return async (dispatch: Dispatch<RegisterAction>) => {
+        try{
+            dispatch({type: RegisterActionTypes.REGISTER_AUTH});
+            const responce = await http.post('api/auth/register', data);
+            dispatch({type: RegisterActionTypes.REGISTER_AUTH_SUCCESS});
+        }
+        catch(error){
+            dispatch({type: RegisterActionTypes.REGISTER_AUTH_ERROR, payload: "Error"});
         }
     }
 }

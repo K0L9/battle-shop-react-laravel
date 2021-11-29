@@ -1,6 +1,7 @@
 import { useState } from "react"
 import InputGroup from "../../common/inputGroup"
 import { useActions } from "../../../hooks/useActions"
+import { IRegisterModel } from "../../../types/register"
 
 import {
     Formik,
@@ -14,13 +15,12 @@ import {
 interface IRegisterFormProps {
     handleSubmit: (e: React.FormEvent) => void
 }
-interface IRegisterPage {
-    // surname: string,
-    name: string,
-    email: string,
-    password: string,
-    passwordConf: string
-}
+// interface IRegisterPage {
+//     name: string,
+//     email: string,
+//     password: string,
+//     passwordConf: string
+// }
 
 interface OtherProps {
     title?: string;
@@ -28,14 +28,14 @@ interface OtherProps {
 
 const RegisterForm = () => {
 
-    const [model, setModel] = useState<IRegisterPage>({ name: "", email: "", password: "", passwordConf: "" } as IRegisterPage)
-    const initialValues: IRegisterPage = { name: "", email: "", password: "", passwordConf: "" };
-
+    const [model, setModel] = useState<IRegisterModel>({ name: "", email: "", password: "", password_confirmation: "" } as IRegisterModel)
+    const initialValues: IRegisterModel = { name: "", email: "", password: "", password_confirmation: "" };
+    const {registerUser}  = useActions();
     
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        console.log("MODEL: ", model)
-        // useActions().loginUser();
+        console.log("MODEL: ", model);
+        registerUser(model);
     }
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -47,13 +47,6 @@ const RegisterForm = () => {
 
     return (
         <form onSubmit={handleSubmit}>
-            {/* <InputGroup
-                value={model.surname}
-                label="Прізвище"
-                field="surname"
-                type="text"
-                onChange={handleChange}
-            /> */}
             <InputGroup
                 value={model.name}
                 label="Ім'я"
@@ -71,14 +64,14 @@ const RegisterForm = () => {
             <InputGroup
                 value={model.password}
                 label="Пароль"
-                field="passord"
+                field="password"
                 type="text"
                 onChange={handleChange}
             />
             <InputGroup
-                value={model.passwordConf}
+                value={model.password_confirmation}
                 label="Підтвердження паролю"
-                field="passordConf"
+                field="password_confirmation"
                 type="text"
                 onChange={handleChange}
             />

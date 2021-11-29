@@ -13,7 +13,6 @@ export interface IUser {
     email: string,
     image: string
 }
-
 export interface AuthState {
     user: null | IUser,
     isAuth: boolean,
@@ -24,12 +23,10 @@ export interface AuthState {
 export interface LoginAuthAction {
     type: AuthActionTypes.LOGIN_AUTH
 }
-
 export interface LoginAuthSuccesAction {
     type: AuthActionTypes.LOGIN_AUTH_SUCCESS,
     payload: IUser
 }
-
 export interface LoginAuthErrorAction {
     type: AuthActionTypes.LOGIN_AUTH_ERROR,
     payload: string
