@@ -1,7 +1,7 @@
 import { useState } from "react"
 import InputGroup from "../../common/inputGroup"
 import { useActions } from "../../../hooks/useActions"
-import { IRegisterModel } from "../../../types/register"
+import { ILoginModel } from "../../../types/auth";
 
 import {
     Formik,
@@ -22,14 +22,14 @@ interface OtherProps {
 
 const RegisterForm = () => {
 
-    const [model, setModel] = useState<IRegisterModel>({ name: "", email: "", password: "", password_confirmation: "" } as IRegisterModel)
-    const initialValues: IRegisterModel = { name: "", email: "", password: "", password_confirmation: "" };
-    const {registerUser}  = useActions();
+    const [model, setModel] = useState<ILoginModel>({ email: "", password: ""} as ILoginModel)
+    const initialValues: ILoginModel = { email: "", password: "" };
+    const {loginUser}  = useActions();
     
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         console.log("MODEL: ", model);
-        registerUser(model);
+        console.log(loginUser(model));
     }
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -42,13 +42,6 @@ const RegisterForm = () => {
     return (
         <form onSubmit={handleSubmit}>
             <InputGroup
-                value={model.name}
-                label="Ім'я"
-                field="name"
-                type="text"
-                onChange={handleChange}
-            />
-            <InputGroup
                 value={model.email}
                 label="Пошта"
                 field="email"
@@ -59,13 +52,6 @@ const RegisterForm = () => {
                 value={model.password}
                 label="Пароль"
                 field="password"
-                type="text"
-                onChange={handleChange}
-            />
-            <InputGroup
-                value={model.password_confirmation}
-                label="Підтвердження паролю"
-                field="password_confirmation"
                 type="text"
                 onChange={handleChange}
             />

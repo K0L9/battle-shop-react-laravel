@@ -29,3 +29,6 @@ export const registerUser = (data: IRegisterModel) => {
         }
     }
 }
+
+export const logoutUser = () => {
+}
