@@ -1,8 +1,10 @@
-import { useState } from "react"
+import { FormEvent, useRef, useState } from "react"
 import InputGroup from "../../common/inputGroup"
+import { ILoginModel, LoginError } from "./types";
 import { useActions } from "../../../hooks/useActions"
-import { ILoginModel } from "../../../types/auth";
+import { validationFields } from "./validation"
 
+import * as Yup from "yup"
 import {
     Formik,
     FormikHelpers,
@@ -22,44 +24,69 @@ interface OtherProps {
 
 const RegisterForm = () => {
 
-    const [model, setModel] = useState<ILoginModel>({ email: "", password: ""} as ILoginModel)
     const initialValues: ILoginModel = { email: "", password: "" };
+    const [state, setState] = useState<ILoginModel>(initialValues)
     const {loginUser}  = useActions();
+    const refFormik = useRef<FormikProps<any>>(null);
+
+    const initialErrors : LoginError = {
+        email: [],
+        password: [],
+        error: ""
+    }
+    const [serverErrors, setServerErrors] = useState<LoginError>(initialErrors);
     
-    const handleSubmit = (e: React.FormEvent) => {
-        e.preventDefault();
-        console.log("MODEL: ", model);
-        console.log(loginUser(model));
+    const handleSubmit = (values: ILoginModel, actions: any) => {
+        try{
+            loginUser(state);
+        }
+        catch(ex){
+            const serverErrors = ex as LoginError;
+            setServerErrors(serverErrors);
+            // refFormik.current.setFieldError(serverErrors, );
+        }
     }
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setModel({
-            ...model,
+        setState({
+            ...state,
             [e.target.name]: e.target.value
         });
     }
 
     return (
-        <form onSubmit={handleSubmit}>
-            <InputGroup
-                value={model.email}
-                label="Пошта"
-                field="email"
-                type="text"
-                onChange={handleChange}
-            />
-            <InputGroup
-                value={model.password}
-                label="Пароль"
-                field="password"
-                type="text"
-                onChange={handleChange}
-            />
-            <button type="submit" className="btn btn-primary">Підтвердити</button>
-        </form>
-
+        <Formik initialValues={initialValues} onSubmit={handleSubmit} validationSchema={validationFields} innerRef={refFormik}>
+            {(props: FormikProps<ILoginModel>) => {
+                    const {
+                        values,
+                        touched,
+                        errors,
+                        handleBlur,
+                        handleChange,
+                        isSubmitting,
+                    } = props
+            return (
+                <Form>
+                    <InputGroup
+                        value={state.email}
+                        label="Пошта"
+                        field="email"
+                        type="text"
+                        errors={props.errors.email}
+                        onChange={props.handleChange}
+                    />
+                    <InputGroup
+                        value={state.password}
+                        label="Пароль"
+                        field="password"
+                        type="password"
+                        errors={props.errors.password}
+                        onChange={handleChange}
+                    />
+                    <button type="submit" className="btn btn-primary">Підтвердити</button>
+            </Form> )} }
+        </Formik>
     );
-
 }
 
 export default RegisterForm;

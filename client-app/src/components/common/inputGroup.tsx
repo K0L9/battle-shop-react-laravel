@@ -2,13 +2,15 @@ import Input, { IBaseInputProps } from "./input";
 
 export interface IBaseInputGroupProps extends IBaseInputProps {
     label: string;
+    errors: string | undefined;
 }
 
-const InputGroup = ({ value, field, onChange, label, type }: IBaseInputGroupProps) => {
+const InputGroup = ({ value, field, errors, onChange, label, type="text" }: IBaseInputGroupProps) => {
     return (
         <div className="mb-3">
           <label htmlFor={field} className="form-label">{label}</label>
           <Input value={value} onChange={onChange} field={field} type={type} />
+          <span className="text-danger">{errors}</span>
         </div>
     )
 }
