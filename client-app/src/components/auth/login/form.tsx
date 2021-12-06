@@ -1,5 +1,6 @@
 import { FormEvent, useRef, useState } from "react"
 import InputGroup from "../../common/inputGroup"
+import InputGroupFormik from "../../common/InputGroupFormik"
 import { ILoginModel, LoginError } from "./types";
 import { useActions } from "../../../hooks/useActions"
 import { validationFields } from "./validation"
@@ -72,7 +73,7 @@ const RegisterForm = () => {
                         label="Пошта"
                         field="email"
                         type="text"
-                        errors={props.errors.email}
+                        errors={serverErrors.email}
                         onChange={props.handleChange}
                     />
                     <InputGroup
@@ -80,7 +81,7 @@ const RegisterForm = () => {
                         label="Пароль"
                         field="password"
                         type="password"
-                        errors={props.errors.password}
+                        errors={serverErrors.password}
                         onChange={handleChange}
                     />
                     <button type="submit" className="btn btn-primary">Підтвердити</button>

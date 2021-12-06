@@ -2,7 +2,7 @@ import Input, { IBaseInputProps } from "./input";
 
 export interface IBaseInputGroupProps extends IBaseInputProps {
     label: string;
-    errors: string | undefined;
+    errors: Array<string> | undefined;
 }
 
 const InputGroup = ({ value, field, errors, onChange, label, type="text" }: IBaseInputGroupProps) => {
