@@ -1,8 +1,10 @@
+import classNames from "classnames";
 import Input, { IBaseInputProps } from "./input";
 
 export interface IBaseInputGroupProps extends IBaseInputProps {
   label: string;
-  errors: Array<string>;
+  error: string | undefined;
+  touched: boolean | undefined;
 }
 
 const InputGroupFormik = ({
@@ -10,21 +12,27 @@ const InputGroupFormik = ({
   field,
   onChange,
   label,
-  errors,
+  error,
+  touched,
   type = "text",
-  ...props
 }: IBaseInputGroupProps) => {
   return (
     <div className="mb-3">
       <label htmlFor={field} className="form-label">
         {label}
       </label>
-      <Input value={value} onChange={onChange} field={field} type={type} />
-      {errors && errors.map((text, key) => {
-          return (
-            <span className="text-danger" key={key}>{text}</span>
-          );
-    })}
+      <Input
+        value={value}
+        onChange={onChange}
+        field={field}
+        type={type}
+        className={classNames(
+          "form-control",
+          { "is-invalid": error && touched },
+          { "is-valid": !error && touched }
+        )}
+      />
+      {error && touched && <span className="text-danger">{error}</span>}
     </div>
   );
 };

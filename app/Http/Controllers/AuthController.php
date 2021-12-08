@@ -85,7 +85,7 @@ class AuthController extends Controller
         }
 
         if (! $token = auth()->attempt($validator->validated())) {
-            return response()->json(['error' => 'Unauthorized'], Response::HTTP_UNAUTHORIZED);
+            return response()->json(['error' => 'Пароль або логін не вірний'], Response::HTTP_UNAUTHORIZED);
         }
 
         return $this->createNewToken($token);

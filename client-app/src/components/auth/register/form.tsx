@@ -1,12 +1,13 @@
-import { useState } from "react"
+import { useState, useRef } from "react"
 import InputGroup from "../../common/inputGroup"
 import { useActions } from "../../../hooks/useActions"
 import { IRegisterModel } from "./types"
 import { RegisterActionTypes, RegisterError } from "./types"
+import { useNavigate } from "react-router";
 
 import {RegisterAction} from "./types"
 
-import * as Yup from 'yup'
+import {validationFields} from "./validation"
 import {
     Formik,
     FormikHelpers,
@@ -15,6 +16,7 @@ import {
     Field,
     FieldProps,
 } from 'formik';
+import InputGroupFormik from "../../common/InputGroupFormik"
 
 interface IRegisterFormProps {
     handleSubmit: (e: React.FormEvent) => void
@@ -23,35 +25,13 @@ interface OtherProps {
     title?: string;
 }
 
-// interface IFormStatus {
-//     message: string
-//     type: string
-// }
-
-// interface IFormStatusProps {
-//     [key: string]: IFormStatus
-// }
-
-// const formStatusProps: IFormStatusProps = {
-//     success: {
-//         message: 'Signed up successfully.',
-//         type: 'success',
-//     },
-//     duplicate: {
-//         message: 'Email-id already exist. Please use different email-id.',
-//         type: 'error',
-//     },
-//     error: {
-//         message: 'Something went wrong. Please try again.',
-//         type: 'error',
-//     },
-// }
-
 const RegisterForm = () => {
 
     const [state, setState] = useState<IRegisterModel>({ name: "", email: "", password: "", password_confirmation: "" } as IRegisterModel)
     const initialValues: IRegisterModel = { name: "", email: "", password: "", password_confirmation: "" };
     const {registerUser}  = useActions();
+    const refFormik = useRef<FormikProps<IRegisterModel>>(null);
+    const navigator = useNavigate();
     
     const initialErrors : RegisterError = {
         email: [],
@@ -59,119 +39,95 @@ const RegisterForm = () => {
         error: ""
     }
     const [serverErrors, setServerErrors] = useState<RegisterError>(initialErrors); 
-
-    const yupValidation = Yup.object().shape({
-        email: Yup.string()
-            .email()
-            .required('Enter valid email'),
-        name: Yup.string().required('Please enter your name'),
-        password: Yup.string()
-            .matches(
-                /^(?=.*[A-Z])(?=.*[a-z])(?=.*[0-9])(?=.*[!@#$%^&*()]).{6,20}\S$/
-            )
-            .required(
-                'Please valid password. One uppercase, one lowercase, one special character and no spaces'
-            ),
-        password_confirmation: Yup.string()
-            .required('Confirm your password')
-            .test(
-                'password match',
-                'Password must match',
-                function (value) {
-                    return this.parent.password === value
-                }
-            ),
-    });
+    const [isSubmitted, setIsSubmitted] = useState<boolean>(false);
     
-    const handleSubmit = (values: IRegisterModel, actions: any) => {
-        try{
-            registerUser(state);
-        }
-        catch(ex){
-            const serverErrors = ex as RegisterError;
-            setServerErrors(serverErrors);
-        }
-    }
+    const handleSubmit = async (values: IRegisterModel, actions: any) => {
+        setIsSubmitted(true);
 
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setState({
-            ...state,
-            [e.target.name]: e.target.value
-        });
+        try {
+          console.log("Register begin");
+          await registerUser(values);
+          console.log("Register end");
+          setIsSubmitted(false);
+          navigator("/login");
+        } catch (ex) {
+          const serverErrors = ex as LoginError;
+          Object.entries(serverErrors).forEach(([key, value]) => {
+              if(Array.isArray(value)) {
+                  let message = '';
+                  value.forEach((item) => {
+                      message += `${item}`;
+                  });
+                  refFormik.current?.setFieldError(key, message);
+              }
+          });
+
+          console.log("-------", serverErrors.error);
+          if(serverErrors.error){
+                setInvalid(serverErrors.error);
+          }
+          //console.log("Login problem", serverErrors);
+          setIsSubmitted(false);
+        }
     }
 
     return (
-        <Formik initialValues={initialValues} onSubmit={handleSubmit} validationSchema={yupValidation}>
+        <Formik 
+            initialValues={initialValues} 
+            onSubmit={handleSubmit} 
+            validationSchema={validationFields}
+            innerRef={refFormik}
+            >
             {(props: FormikProps<IRegisterModel>) => {
                     const {
                         values,
-                        touched,
                         errors,
-                        handleBlur,
+                        touched,
                         handleChange,
+                        handleBlur,
+                        handleSubmit,
                         isSubmitting,
-                        validateForm,
                     } = props
 
             return(
-                <Form>
-                    {/* <InputGroup
-                        value={state.name}
+                <Form onSubmit={handleSubmit}>
+                    <InputGroupFormik
                         label="Ім'я"
                         field="name"
                         type="text"
-                        errors={errors.name}
-                        onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                            handleChange(e);
-                            setState({
-                                ...state,
-                                [e.target.name]: e.target.value
-                            });
-                          }}
+                        value={values.name}
+                        error={errors.name}
+                        touched={touched.name}
+                        onChange={handleChange}
                     />
-                    <InputGroup
-                        value={state.email}
+                    <InputGroupFormik
                         label="Пошта"
                         field="email"
                         type="email"
-                        errors={errors.email}
-                        onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                            handleChange(e);
-                            setState({
-                                ...state,
-                                [e.target.name]: e.target.value
-                            });
-                          }}
+                        value={values.email}
+                        error={errors.email}
+                        touched={touched.email}
+                        onChange={handleChange}
                     />
-                    <InputGroup
-                        value={state.password}
+                    <InputGroupFormik
                         label="Пароль"
-                        field="password"
+                        field="email"
                         type="password"
-                        errors={errors.password}
-                        onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                            handleChange(e);
-                            setState({
-                                ...state,
-                                [e.target.name]: e.target.value
-                            });
-                          }}
+                        value={values.password}
+                        error={errors.password}
+                        touched={touched.password}
+                        onChange={handleChange}
                     />
-                    <InputGroup
-                        value={state.password_confirmation}
+                    <InputGroupFormik
                         label="Підтвердження паролю"
                         field="password_confirmation"
                         type="password"
-                        errors={errors.password_confirmation}
-                        onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                            handleChange(e);
-                            setState({
-                                ...state,
-                                [e.target.name]: e.target.value
-                            });
-                          }}
-                    /> */}
-                    <button type="submit" className="btn btn-primary">Підтвердити</button>
+                        value={values.password_confirmation}
+                        error={errors.password_confirmation}
+                        touched={touched.password_confirmation}
+                        onChange={handleChange}
+                    />
+                    <button type="submit" className="btn btn-primary" disabled={isSubmitting}>Підтвердити</button>
                 </Form>
             )}}
         </Formik>

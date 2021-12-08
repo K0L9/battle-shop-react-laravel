@@ -1,11 +1,11 @@
-import { FormEvent, useRef, useState } from "react"
+import { useRef, useState } from "react"
 import InputGroup from "../../common/inputGroup"
 import InputGroupFormik from "../../common/InputGroupFormik"
 import { ILoginModel, LoginError } from "./types";
 import { useActions } from "../../../hooks/useActions"
+import { useNavigate } from "react-router";
 import { validationFields } from "./validation"
 
-import * as Yup from "yup"
 import {
     Formik,
     FormikHelpers,
@@ -28,23 +28,45 @@ const RegisterForm = () => {
     const initialValues: ILoginModel = { email: "", password: "" };
     const [state, setState] = useState<ILoginModel>(initialValues)
     const {loginUser}  = useActions();
-    const refFormik = useRef<FormikProps<any>>(null);
+    const refFormik = useRef<FormikProps<ILoginModel>>(null);
+    const navigator = useNavigate();
 
     const initialErrors : LoginError = {
         email: [],
         password: [],
-        error: ""
+        error: "",
     }
+    const [invalid, setInvalid] = useState<string>("");
     const [serverErrors, setServerErrors] = useState<LoginError>(initialErrors);
+    const [isSubmitted, setIsSubmitted] = useState<boolean>(false);
     
-    const handleSubmit = (values: ILoginModel, actions: any) => {
-        try{
-            loginUser(state);
-        }
-        catch(ex){
-            const serverErrors = ex as LoginError;
-            setServerErrors(serverErrors);
-            // refFormik.current.setFieldError(serverErrors, );
+    const handleSubmit = async (values: ILoginModel, actions: any) => {
+        setIsSubmitted(true);
+
+        try {
+          console.log("Login begin");
+          await loginUser(values);
+          console.log("Login end");
+          setIsSubmitted(false);
+          //navigator("/");
+        } catch (ex) {
+          const serverErrors = ex as LoginError;
+          Object.entries(serverErrors).forEach(([key, value]) => {
+              if(Array.isArray(value)) {
+                  let message = '';
+                  value.forEach((item) => {
+                      message += `${item}`;
+                  });
+                  refFormik.current?.setFieldError(key, message);
+              }
+          });
+
+          console.log("-------", serverErrors.error);
+          if(serverErrors.error){
+                setInvalid(serverErrors.error);
+          }
+          //console.log("Login problem", serverErrors);
+          setIsSubmitted(false);
         }
     }
 
@@ -56,37 +78,48 @@ const RegisterForm = () => {
     }
 
     return (
-        <Formik initialValues={initialValues} onSubmit={handleSubmit} validationSchema={validationFields} innerRef={refFormik}>
+    <div>
+        {invalid && <div className="alert alert-danger">{invalid}</div>}
+        <Formik 
+            initialValues={initialValues} 
+            onSubmit={handleSubmit} 
+            validationSchema={validationFields} 
+            innerRef={refFormik}
+        >
             {(props: FormikProps<ILoginModel>) => {
                     const {
                         values,
-                        touched,
                         errors,
-                        handleBlur,
+                        touched,
                         handleChange,
+                        handleBlur,
+                        handleSubmit,
                         isSubmitting,
                     } = props
             return (
-                <Form>
-                    <InputGroup
-                        value={state.email}
+                <Form onSubmit={handleSubmit}>
+                    <InputGroupFormik
                         label="Пошта"
                         field="email"
                         type="text"
-                        errors={serverErrors.email}
-                        onChange={props.handleChange}
+                        value={values.email}
+                        error={errors.email}
+                        touched={touched.email}
+                        onChange={handleChange}
                     />
-                    <InputGroup
-                        value={state.password}
+                    <InputGroupFormik
                         label="Пароль"
                         field="password"
                         type="password"
-                        errors={serverErrors.password}
+                        value={values.password}
+                        error={errors.password}
+                        touched={touched.email}
                         onChange={handleChange}
                     />
-                    <button type="submit" className="btn btn-primary">Підтвердити</button>
+                    <button type="submit" disabled={isSubmitting} className="btn btn-primary">Підтвердити</button>
             </Form> )} }
         </Formik>
+    </div>
     );
 }
 
