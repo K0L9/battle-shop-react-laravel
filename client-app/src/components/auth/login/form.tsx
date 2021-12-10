@@ -48,7 +48,7 @@ const RegisterForm = () => {
           await loginUser(values);
           console.log("Login end");
           setIsSubmitted(false);
-          //navigator("/");
+          navigator("/");
         } catch (ex) {
           const serverErrors = ex as LoginError;
           Object.entries(serverErrors).forEach(([key, value]) => {

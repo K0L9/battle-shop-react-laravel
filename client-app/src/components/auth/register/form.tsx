@@ -34,10 +34,13 @@ const RegisterForm = () => {
     const navigator = useNavigate();
     
     const initialErrors : RegisterError = {
+        name: [],
         email: [],
         password: [],
         error: ""
     }
+
+    const [invalid, setInvalid] = useState<string>("");
     const [serverErrors, setServerErrors] = useState<RegisterError>(initialErrors); 
     const [isSubmitted, setIsSubmitted] = useState<boolean>(false);
     
@@ -51,7 +54,7 @@ const RegisterForm = () => {
           setIsSubmitted(false);
           navigator("/login");
         } catch (ex) {
-          const serverErrors = ex as LoginError;
+          const serverErrors = ex as RegisterError;
           Object.entries(serverErrors).forEach(([key, value]) => {
               if(Array.isArray(value)) {
                   let message = '';
@@ -72,6 +75,8 @@ const RegisterForm = () => {
     }
 
     return (
+        <div>
+        {invalid && <div className="alert alert-danger">{invalid}</div>}
         <Formik 
             initialValues={initialValues} 
             onSubmit={handleSubmit} 
@@ -111,7 +116,7 @@ const RegisterForm = () => {
                     />
                     <InputGroupFormik
                         label="Пароль"
-                        field="email"
+                        field="password"
                         type="password"
                         value={values.password}
                         error={errors.password}
@@ -131,6 +136,7 @@ const RegisterForm = () => {
                 </Form>
             )}}
         </Formik>
+        </div>
     );
 
 }

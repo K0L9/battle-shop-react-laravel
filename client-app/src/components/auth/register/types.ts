@@ -6,6 +6,7 @@ export interface IRegisterModel {
 }
 
 export type RegisterError = {
+    name: Array<string>,
     email: Array<string>,
     password: Array<string>,
     error: string
