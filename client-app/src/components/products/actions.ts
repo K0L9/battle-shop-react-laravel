@@ -6,6 +6,8 @@ import {
     IAddProductsResponse,
     ProductActionTypes, 
     ProductErrors, 
+    ISearchProduct,
+    PaginatedListResponse,
     } from './types';
 
 import {Dispatch} from "react";
@@ -13,21 +15,25 @@ import http from '../../http_common';
 import axios, { AxiosError } from 'axios';
 import { ServerResponse } from 'http';
 
-export const getProducts = () => {
+export const getProducts = (search: ISearchProduct) => {
     return async (dispatch: Dispatch<ProductAction>) => {
         try {
-            const response = await http.get<IGetProductsResponse>('api/products');
+            const response = await http.get<IGetProductsResponse>('api/products', {
+                params: search
+            });
 
             const {data} = response.data;
             SetProducts(data, dispatch);
+
+            return Promise.resolve();
         }
         catch(error) {
             if(axios.isAxiosError(error)) {
                 console.log("Action problem: ", error);
-                // const serverError = error as AxiosError<>;
-                // if(serverError && serverError.response){
-                //     return Promise.reject(serverError.response.data);
-                // }
+                const serverError = error as AxiosError<ProductErrors>;
+                if(serverError && serverError.response){
+                    return Promise.reject(serverError.response.data);
+                }
             }
         }
     }
@@ -64,7 +70,7 @@ export const removeProduct = (id: number) => {
     }
 }
 
-export const SetProducts = (data: Array<IProduct>, dispatch: Dispatch<ProductAction>) =>  {
+export const SetProducts = (data: PaginatedListResponse, dispatch: Dispatch<ProductAction>) =>  {
     dispatch({
       type: ProductActionTypes.PRODUCTS_GET,
       payload: data,

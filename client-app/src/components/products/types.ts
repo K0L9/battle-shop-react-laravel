@@ -9,8 +9,12 @@ export interface IProduct {
     name: string,
     detail: string,
 }
-export interface IGetProductsResponse{
+export interface PaginatedListResponse{
     data: Array<IProduct>,
+    last_page: number,
+}
+export interface IGetProductsResponse{
+    data: PaginatedListResponse,
     success: boolean,
     message: string
     currentPage: number,
@@ -25,10 +29,9 @@ export interface IAddProductsResponse{
     success: boolean,
     message: string
 }
-export interface IDeleteProductsResponse{
-    data: IProduct,
-    success: boolean,
-    message: string
+
+export interface ISearchProduct{
+    page: number | string
 }
 
 export type ProductErrors = {
@@ -40,11 +43,12 @@ export type ProductErrors = {
 
 export interface ProductState {
     products: Array<IProduct>,
+    pageCount: number,
 }
 
 export interface ProductGetAction {
     type: ProductActionTypes.PRODUCTS_GET,
-    payload: Array<IProduct>,
+    payload: PaginatedListResponse,
 }
 export interface ProductDeleteAction {
     type: ProductActionTypes.PRODUCT_DELETE,

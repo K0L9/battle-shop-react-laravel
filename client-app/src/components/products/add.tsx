@@ -21,7 +21,6 @@ const AddProduct = () => {
 
     const handleSubmit = async (values: IProduct, actions: any) => {
         setIsSubmitted(true);
-        console.log("values: ", values );
         try {
             console.log("Login begin");
             await addProduct(values);

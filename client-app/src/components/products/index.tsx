@@ -1,22 +1,41 @@
 import { useActions } from "../../hooks/useActions";
 import { useTypedSelector } from "../../hooks/useTypedSelector";
 import { useEffect, useState } from "react";
-import { IProduct, ProductErrors } from "./types";
-import {Link} from "react-router-dom"
+import { IProduct, ProductErrors, ISearchProduct } from "./types";
+import {Link, useNavigate} from "react-router-dom"
 import { getAllJSDocTagsOfKind } from "typescript";
 import { triggerAsyncId } from "async_hooks";
-import {toast} from "react-toastify"
+import {toast} from "react-toastify";
+import ReactPaginate from 'react-paginate';
 
 
 const Products = () => {
     const {getProducts, removeProduct} = useActions();
-    const {products} = useTypedSelector(redux => redux.product);
-    const [isSubmited, setIsSubmitted] = useState<boolean>(true);
+    const {products, pageCount} = useTypedSelector(redux => redux.product);
+    const [isSubmited, setIsSubmitted] = useState<boolean>(false);
     var Loader = require("react-loader");
+    const navigator = useNavigate();
 
     useEffect(() => {
-        getProducts();
-        setIsSubmitted(false);
+      async function fetchProducts() {
+        setIsSubmitted(true);
+        try {
+          const url = window.location.search;
+          const params = new URLSearchParams(url);
+          let page = params?.get('page') ?? 1; 
+
+          console.log("page: ", page)
+
+          const search: ISearchProduct = {
+            page,
+          };
+          await getProducts(search);
+          setIsSubmitted(false);
+        } catch (error) {
+          setIsSubmitted(false);
+        }
+      }
+      fetchProducts();
     }, [])
 
     const handleRemove = (id: number) => {
@@ -33,6 +52,10 @@ const Products = () => {
           setIsSubmitted(false);
       }
     }
+    const handlePageClick = ( e: any ) => {
+      // console.log("e: ", e)
+      navigator(`/products?page=${e.selected + 1}`);
+    }
 
     return (
         <>
@@ -44,7 +67,8 @@ const Products = () => {
               {products.length === 0 ? (
                   <h1>List is empty</h1>
               ): (
-                  <table className="table table-hover">
+                <>
+                <table className="table table-hover">
                     <thead>
                       <tr>
                         <th scope="col">Id</th>
@@ -63,6 +87,24 @@ const Products = () => {
                         ))}
                     </tbody>
                   </table>
+                  <ReactPaginate 
+                  onPageChange={handlePageClick}
+                  pageRangeDisplayed={5}
+                  pageCount={pageCount}
+                  nextLabel=">"
+                  previousLabel="<" 
+                  pageClassName="page-item"
+                  pageLinkClassName="page-link"
+                  previousClassName="page-item"
+                  previousLinkClassName="page-link"
+                  nextClassName="page-item"
+                  nextLinkClassName="page-link"
+                  breakLabel="..."
+                  breakClassName="page-item"
+                  breakLinkClassName="page-link"
+                  containerClassName="pagination"
+                  activeClassName="active"/>
+                  </>
               )}
               </div>
           </div>
